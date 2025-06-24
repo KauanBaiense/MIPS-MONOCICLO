@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 entity Controle is
 	port(
-		 opcode : in STD_LOGIC_VECTOR(5 downto 0);
+        opcode : in STD_LOGIC_VECTOR(5 downto 0);
         reg_write : out STD_LOGIC;
         ula_src : out STD_LOGIC;
         mem_read : out STD_LOGIC;

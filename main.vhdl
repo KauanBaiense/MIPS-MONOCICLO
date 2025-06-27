@@ -19,18 +19,23 @@ architecture Behavior of controle is
     signal inst : unsigned(25 downto 0);
     signal D1 : unsigned(27 downto 0);
     signal D : unsigned(14 downto 0);
-    signal A,B,C : unsigned(4 downto 0);
+    signal A,B,C,M1 : unsigned(4 downto 0);
     signal FontePC : std_logic;
 begin
 
     PC: entity work.unsigned_register(behavior)
         generic map(N => 32)
         port map(clk => clk, enable => signals, d => M5, q => sPC);
+        
     -- PARTE DE BAIXO MIPS
     -- sMem : entity work.memory
     inst <= sMem(25 downto 0);
     
     D <= inst(14 downto 0);
+    MUX1: entity work.mux_2to1(behavior)
+        generic map(N => 32)
+        port map(sel => RegDst, in_0 => inst(20 downto 16), in_1 => inst(15 downto 11), y => M1);
+    
     
     ES <= resize(D,32); -- extensão de sinal
     A,B,C
@@ -40,14 +45,14 @@ begin
     S1 <= '4' + sPC; -- somador 1
     D1 <= inst & "00"; -- Deslocamento de 2 bits para a esquerda *4
     D2 <= S1(31 downto 28) & D1; -- concatenação D1 E (PC + 4) 4 bits
+                 
+    MUX4: entity work.mux_2to1(behavior)
+        generic map(N => 32)
+        port map(sel => FontePC, in_0 => S1, in_1 => S2, y => M4);
     
     MUX5: entity work.mux_2to1(behavior)
         generic map(N => 32)
         port map(sel => /*VEMDOCONTROLE*/ DVI, in_0 => M4, in_1 => D2, y => M5);
-    
-    MUX4: entity work.mux_2to1(behavior)
-        generic map(N => 32)
-        port map(sel => FontePC, in_0 => S1, in_1 => S2, y => M4);
     
     FontePC <= zero and DvC;
     ESv4 <= ES(29 downto 0) & "00";

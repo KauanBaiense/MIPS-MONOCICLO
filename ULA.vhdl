@@ -19,34 +19,37 @@ end entity;
 architecture behavior of ULA is
     signal c2, c1, c0 : std_logic;
     signal result_soma, result_sub, result_soma_sub, result_and_or, result_interno : std_logic_vector(n downto 0);
+    signal bit_significativo : std_logic;
+    signal zeros : std_logic_vector(n-1 downto 0) := (others => '0');
 begin
     c0 <= cULA(0);
     c1 <= cULA(1);
     c2 <= cULA(2);
 
     MUX_CTRL_SAIDA : entity work.mux2_1
-        generic map( n => n )
+        generic map( n => n+1 )
         port map (A => result_soma_sub, B => result_and_or, sel => c1, Y => result_interno);
 
-    SOMA : entity work.somador
+    SOMA : entity work.somador32
         generic map( n => n )
         port map (A => a, B => b, S => result_soma);
 
-    SUB : entity work.subtrator
+    SUB : entity work.subtrator32
         generic map( n => n )
         port map (A => a, B => b, S => result_sub);
 
     result_and_or <= '0' & (a AND b) when (c0 = '0') else '0' & (a OR b);
     result_soma_sub <= result_soma when (c2 = '0') else result_sub;
 
-    process(result_interno, cULA)
+    bit_significativo <= result_interno(result_interno'high);
+    process(bit_significativo, cULA)
     begin
-        if result_interno'high = '0' then
+        if bit_significativo = '0' then
             result <= result_interno(n-1 downto 0);
-            zero <= '1' when result_interno = (others => '0') else '0';
+            zero <= '1' when unsigned(result_interno) = 0 else '0';
             overflow_ULA <= '0';
         elsif cULA = "111" then
-            result <= std_logic_vector(unsigned((others => '0')) + 1);
+            result <= std_logic_vector(unsigned(zeros) + 1);
         else
             overflow_ULA <= '1';
         end if;

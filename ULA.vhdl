@@ -28,7 +28,7 @@ begin
 
     MUX_CTRL_SAIDA : entity work.mux2_1
         generic map( n => n+1 )
-        port map (A => result_soma_sub, B => result_and_or, sel => c1, Y => result_interno);
+        port map (A => result_and_or, B => result_soma_sub, sel => c1, Y => result_interno);
 
     SOMA : entity work.somador32
         generic map( n => n )
@@ -38,11 +38,11 @@ begin
         generic map( n => n )
         port map (A => a, B => b, S => result_sub);
 
-    result_and_or <= '0' & (a AND b) when (c0 = '0') else '0' & (a OR b);
+    result_and_or <= '0' & (a AND b) when (c0= '0') else '0' & (a OR b);
     result_soma_sub <= result_soma when (c2 = '0') else result_sub;
 
     bit_significativo <= result_interno(result_interno'high);
-    process(bit_significativo, cULA)
+    process(all)
     begin
         if bit_significativo = '0' then
             result <= result_interno(n-1 downto 0);

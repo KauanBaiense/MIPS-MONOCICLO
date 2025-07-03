@@ -28,6 +28,7 @@ begin
                     when "100100" => cULA_interno <= "000";
                     when "100101" => cULA_interno <= "001";
                     when "101010" => cULA_interno <= "111";
+                    when "111111" => cULA_interno <= "011";
                     when others => cULA_interno <= "000";
                 end case;
             when others => cULA_interno <= "000";

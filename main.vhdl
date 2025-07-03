@@ -6,42 +6,65 @@ entity main is
     Port (
         clk     : in  STD_LOGIC;
         reset   : in  STD_LOGIC;
-        ZERO    : in STD_LOGIC;
-        opcode  : in  STD_LOGIC_VECTOR(5 downto 0);
-        funct   : in  STD_LOGIC_VECTOR(5 downto 0);
-        A       : in  STD_LOGIC_VECTOR(7 downto 0);
-        B       : in  STD_LOGIC_VECTOR(7 downto 0);
-        RESULT  : out STD_LOGIC_VECTOR(7 downto 0)
+        MEMORIA : in  STD_LOGIC_VECTOR(31 downto 0); -- MEMORIA DE INSTRUÇÕES
+        RESULT  : out STD_LOGIC_VECTOR(31 downto 0) --TESTE
     );
 end main;
+
 architecture Behavior of main is
-    signal sPC,M5,S1,D2,ES,A,B,resultado : unsigned(31 downto 0);
-    signal inst : unsigned(25 downto 0);
-    signal D1 : unsigned(27 downto 0);
-    signal D : unsigned(14 downto 0);
-    signal regl1,regl2,C,M1 : unsigned(4 downto 0);
-    signal Controle,ctrlULA : std_logic_vector(5 downto 0);
+    signal sPC,M5,S1,D2,ES,A,B,resultado : std_logic_vector(31 downto 0);
+    signal inst : std_logic_vector(25 downto 0);
+    signal D1 : std_logic_vector(27 downto 0);
+    signal D : std_logic_vector(14 downto 0);
+    signal regl1,regl2,C,M1 : std_logic_vector(4 downto 0);
+    signal opcode,funct : std_logic_vector(5 downto 0);
     signal FontePC,zero,overflow_ULA : std_logic;
+    signal RegDst, ALUFonte, MemParaReg, RegWrite, MemRead, MemWrite, DvC, DVI : std_logic; -- SINAIS CONTROLE
+    signal ULAop : std_logic_vector(1 downto 0); --SINAL CONTROLE PARA ULA
     signal cULA : std_logic_vector(2 downto 0);
 begin
-
-    PC: entity work.unsigned_register(behavior)
+    -- PARTE DE BAIXO MIPS
+    PC: entity work.std_register(behavior)
         generic map(N => 32)
         port map(clk => clk, enable => signals, d => M5, q => sPC);
-   
-    -- PARTE DE BAIXO MIPS
+
     -- sMem : entity work.memory
+    -- LEITURA de SPC
+
     inst <= sMem(25 downto 0);
-    Controle <= sMem(31 downto 26); -- controle de instrução
-    regl1 <= inst(25 downto 21); --reg a ser lido 1
-    regl2 <= inst(20 downto 16); --reg a ser lido 2 mux 0
+
+    opcode <= sMem(31 downto 26); -- BITS DO CONTROLE
+    
+    regl1 <= inst(25 downto 21); --reg a ser lido 1 ENTRADA DE BANCO DE REGISTRADORES
+    regl2 <= inst(20 downto 16); --reg a ser lido 2 mux 0 ENTRADA DE BANCO DE REGISTRADORES
+    
     C <= inst(15 downto 11); -- reg a ser escrito mux 1
     D <= inst(15 downto 0); -- vai pra extensao de sinal
-    ctrlULA <= inst(5 downto 0); -- controle da ULA
-    ES <= resize(D,32); -- extensão de sinal
+    funct <= inst(5 downto 0); -- sinal pro Ctrl-ULA
+    
+    Controlador: entity work.controle
+    port map(opcode => opcode, RegDst => RegDst, ALUFonte => ALUFonte, MemParaReg => MemParaReg,
+        RegWrite => RegWrite, MemRead => MemRead, MemWrite => MemWrite, DvC => DvC, DVI => DVI,
+        ULAop => ULAop); --CONTROLE
+
     MUX1: entity work.mux_2to1(behavior)
         generic map(N => 5)
         port map(sel => RegDst, in_0 => regl2, in_1 => C, y => M1);
+
+    --BANCO DE REGISTRADORES
+    BancoREG : entity work.banco_Reg
+        generic map(n => 32)
+        port map(reg_rs => regl1, reg_rt => regl2, reg_rd => M1, writer => M3, escReg => RegWrite, A => A, B => B);
+    
+    ES <= std_logic_vector(resize(unsigned(D),32)); -- extensão de sinal
+    
+    MUX1: entity work.mux_2to1(behavior)
+        generic map(N => 5)
+        port map(sel => RegDst, in_0 => regl2, in_1 => C, y => M1);
+
+    ctrlULA: entity work.ctrl_ULA
+        generic map(n => 32)
+        port map(funct => funct, ULAop => ULAop, cULA => cULA);
     
     ULA: entity work.ULA
         generic map(N=> 32)
@@ -62,15 +85,15 @@ begin
 
     MUX5: entity work.mux_2to1(behavior)
         generic map(N => 32)
-        port map(sel => /*VEMDOCONTROLE*/ DVI, in_0 => M4, in_1 => D2, y => M5);
+        port map(sel => DVI, in_0 => M4, in_1 => D2, y => M5);
     
     FontePC <= zero and DvC;
+
     ESv4 <= ES(29 downto 0) & "00";
+
     somador2: entity work.somador(behavior)
         generic map(N => 32)
         port map(a => S1, b => ESv4, y => S2);
-    
-    
 
 
 end behavior;

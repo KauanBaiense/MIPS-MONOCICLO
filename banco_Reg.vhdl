@@ -15,15 +15,19 @@ entity banco_Reg is
 end entity;
 
 architecture behavior of banco_Reg is
+    type lista is array (0 to 31) of STD_LOGIC_VECTOR(n-1 downto 0);
+    signal lista_reg : lista := (others => "0");
 
 begin
 
-    ESCRITA : entity work.escrita_reg
-    generic map (n => n)
-    port map (escReg => escReg, writer => writer, destino => reg_rd);
-
-    LEITURA : entity work.leitura_reg
-    generic map (n => n)
-    port map (A => A, B => B, reg_rs => reg_rs, reg_rt => reg_rt);
+    process(all)
+    begin
+        if escReg = '1' then
+            lista_reg(to_integer(unsigned(reg_rd))) <= writer;
+        else
+            A <= lista_reg(to_integer(unsigned(reg_rs)));
+            B <= lista_reg(to_integer(unsigned(reg_rt)));
+        end if;
+    end process;
 
 end architecture;

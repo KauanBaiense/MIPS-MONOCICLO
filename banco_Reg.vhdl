@@ -16,18 +16,26 @@ end entity;
 
 architecture behavior of banco_Reg is
     type lista is array (0 to 31) of STD_LOGIC_VECTOR(n-1 downto 0);
-    signal lista_reg : lista := (others => "0");
+    signal lista_reg : lista;
+    signal reg_rd_interno, reg_rs_interno, reg_rt_interno : STD_LOGIC_VECTOR(4 downto 0) := (others => '0');
+    signal writer_interno : STD_LOGIC_VECTOR(n-1 downto 0) := (others => '0');
+    signal escReg_interno : STD_LOGIC := '0';
 
 begin
+
+    reg_rd_interno <= reg_rd;
+    reg_rt_interno <= reg_rt;
+    reg_rs_interno <= reg_rs;
+    writer_interno <= writer;
 
     process(all)
     begin
         if escReg = '1' then
-            lista_reg(to_integer(unsigned(reg_rd))) <= writer;
+            lista_reg(to_integer(unsigned(reg_rd_interno))) <= writer_interno;
         else
-            A <= lista_reg(to_integer(unsigned(reg_rs)));
-            B <= lista_reg(to_integer(unsigned(reg_rt)));
+            A <= lista_reg(to_integer(unsigned(reg_rs_interno)));
+            B <= lista_reg(to_integer(unsigned(reg_rt_interno)));
         end if;
     end process;
-
+            
 end architecture;

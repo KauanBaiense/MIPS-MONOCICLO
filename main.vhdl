@@ -6,12 +6,12 @@ entity main is
     Port (
         clk     : in  STD_LOGIC;
         reset   : in  STD_LOGIC;
-        MEMORIA : in  STD_LOGIC_VECTOR(31 downto 0); -- MEMORIA DE INSTRUÇÕES
+        MEMORIA : in  STD_LOGIC_VECTOR(31 downto 0) -- MEMORIA DE INSTRUÇÕES
     );
 end main;
 
 architecture Behavior of main is
-    signal sPC,M3,M4,M5,S1,S2,D2,ES,A,B,resultado,sMem,ESv4 : std_logic_vector(31 downto 0);
+    signal sPC,M3,M2,M4,M5,S1,S2,D2,ES,A,B,resultado,sMem,ESv4,DadoLido : std_logic_vector(31 downto 0);
     signal inst : std_logic_vector(25 downto 0);
     signal D1 : std_logic_vector(27 downto 0);
     signal D : std_logic_vector(15 downto 0);
@@ -27,11 +27,11 @@ begin
         generic map(N => 32)
         port map(clk => clk, d => M5, q => sPC);
     --Memoria de instruções
-    MemInst : entity work.memoriaMIPS
-        port map(address => sPC(7 downto 0), clock => clk, q => sMem);
+    --MemInst : entity work.memoriaMIPS
+       -- port map(address => sPC(7 downto 0), clock => clk, q => sMem);
 
     -- LEITURA de SPC
-    --sMem <= MEMORIA; 
+    sMem <= MEMORIA; 
     inst <= sMem(25 downto 0);
 
     opcode <= sMem(31 downto 26); -- BITS DO CONTROLE
@@ -63,13 +63,22 @@ begin
         generic map(n => 32)
         port map(funct => funct, ULAop => ULAop, cULA => cULA);
     
+    MUX2: entity work.mux2_1(behavior)
+        generic map(N => 32)
+        port map(sel => ALUFonte, A => B, B => ES, Y => M2);
+    
     ULA: entity work.ULA
         generic map(N=> 32)
-        port map(a=> A, b => B, result=> resultado, overflow_ULA=> overflow_ULA, cULA=> cULA, zero => zero);
+        port map(a=> A, b => M2, result=> resultado, overflow_ULA=> overflow_ULA, cULA=> cULA, zero => zero);
+    
+    MEM_DADOS: entity work.ramp1p
+        generic map(N => 32)
+        port map(address => resultado(7 downto 0), clock => clk, data => B, wren => MemWrite, q => DadoLido); 
+    -- possivel erro, conectar B diretamente com a memoria
     
     MUX3: entity work.mux2_1(behavior)
         generic map(N => 32)
-        port map(sel => MemParaReg, A => resultado, B => MEMORIA, Y => M3);
+        port map(sel => MemParaReg, A => resultado, B => DadoLido, Y => M3);
     
     -- PARTE DE CIMA MIPS
     Somador1: entity work.somador(behavior)
@@ -84,6 +93,8 @@ begin
     D1 <= inst & "00"; -- Deslocamento de 2 bits para a esquerda *4
     D2 <= S1(31 downto 28) & D1; -- concatenação D1 E (PC + 4) 4 bits
     
+    FontePC <= zero and DvC;
+
     MUX4: entity work.mux2_1(behavior)
         generic map(N => 32)
         port map(sel => FontePC, A => S1, B => S2, Y => M4);
@@ -92,6 +103,5 @@ begin
         generic map(N => 32)
         port map(sel => DVI, A => M4, B => D2, Y => M5);
     
-    FontePC <= zero and DvC;
 
 end behavior;

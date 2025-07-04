@@ -11,10 +11,17 @@ entity divisor is
 end entity;
 
 architecture behavior of divisor is
- 
-begin
-    S <= std_logic_vector(resize(signed(A),33) / resize(signed(B),33));
-end architecture;
 
+
+begin
+process(B)
+begin
+    if signed(B) = ("00000000000000000000000000000000") then
+        S <= ("000000000000000000000000000000000");  -- Evita divisão por zero
+    else
+        S <= std_logic_vector(resize(signed(A), N+1) / resize(signed(B), N+1));
+    end if;
+end process;
+end architecture;
 
 

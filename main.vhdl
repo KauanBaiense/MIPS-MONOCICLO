@@ -73,7 +73,7 @@ begin
     -- PARTE DE CIMA MIPS
     Somador1: entity work.somador(behavior)
         generic map(N => 32)
-        port map(a => sPC, b => "00000000000000000000000000000000100", s => S1); -- soma PC + 4
+        port map(a => sPC, b => "00000000000000000000000000000100", s => S1); -- soma PC + 4
     
     ESv4 <= ES(29 downto 0) & "00";
     somador2: entity work.somador(behavior)

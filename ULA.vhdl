@@ -30,7 +30,7 @@ begin
         generic map( n => n+1 )
         port map (A => result_and_or, B => result_soma_sub, sel => c1, Y => result_interno);
 
-    SOMA : entity work.somador
+    SOMA : entity work.somador32
         generic map( n => n )
         port map (A => a, B => b, S => result_soma);
 

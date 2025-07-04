@@ -1,0 +1,16 @@
+ghdl -a --std=08 mux2_1.vhdl
+ghdl -a --std=08 controle.vhdl
+ghdl -a --std=08 divisor.vhdl
+ghdl -a --std=08 std_register.vhdl
+ghdl -a --std=08 registerenable.vhdl
+ghdl -a --std=08 subtrator.vhdl
+ghdl -a --std=08 somador.vhdl
+ghdl -a --std=08 somador32.vhdl
+ghdl -a --std=08 ctrl_ULA.vhdl
+ghdl -a --std=08 ULA.vhdl
+ghdl -a --std=08 banco_Reg.vhdl
+ghdl -a --std=08 main.vhdl
+ghdl -a --std=08 main_tb.vhdl
+ghdl -e --std=08 main_tb
+ghdl -r --std=08 main_tb --vcd=testbench_GTKWAVE.vcd
+gtkwave testbench_GTKWAVE.vcd

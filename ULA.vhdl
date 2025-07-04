@@ -64,6 +64,7 @@ begin
             overflow_ULA <= '0';
         else
             overflow_ULA <= '1';
+            result <= result_interno(n-1 downto 0);                           
         end if;
     end process;
 

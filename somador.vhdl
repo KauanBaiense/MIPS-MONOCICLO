@@ -11,5 +11,7 @@ entity somador is
 end entity;
 architecture behavior of somador is
 begin
-    S <= std_logic_vector(unsigned(A) + unsigned(B));
+
+   S <= std_logic_vector(unsigned(A) + unsigned(B));
+
 end architecture;

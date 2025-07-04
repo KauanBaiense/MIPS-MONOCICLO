@@ -7,7 +7,6 @@ entity main is
         clk     : in  STD_LOGIC;
         reset   : in  STD_LOGIC;
         MEMORIA : in  STD_LOGIC_VECTOR(31 downto 0); -- MEMORIA DE INSTRUÇÕES
-        RESULT  : out STD_LOGIC_VECTOR(31 downto 0) --TESTE
     );
 end main;
 
@@ -27,10 +26,12 @@ begin
     PC: entity work.registerEnable(behavior)
         generic map(N => 32)
         port map(clk => clk, d => M5, q => sPC);
+    --Memoria de instruções
+    MemInst : entity work.memoriaMIPS
+        port map(address => sPC(7 downto 0), clock => clk, q => sMem);
 
-    -- sMem : entity work.memory
     -- LEITURA de SPC
-    sMem <= MEMORIA; 
+    --sMem <= MEMORIA; 
     inst <= sMem(25 downto 0);
 
     opcode <= sMem(31 downto 26); -- BITS DO CONTROLE

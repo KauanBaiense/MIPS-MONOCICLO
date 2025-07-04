@@ -46,14 +46,14 @@ ENTITY ramMem IS
 		clock		: IN STD_LOGIC  := '1';
 		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 		wren		: IN STD_LOGIC ;
-		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+		q		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
 	);
 END ramMem;
 
 
 ARCHITECTURE SYN OF rammem IS
 
-	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (7 DOWNTO 0);
+	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (31 DOWNTO 0);
 
 
 
@@ -78,7 +78,7 @@ ARCHITECTURE SYN OF rammem IS
 			clock0	: IN STD_LOGIC ;
 			data_a	: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 			wren_a	: IN STD_LOGIC ;
-			q_a	: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+			q_a	: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
 	);
 	END COMPONENT;
 

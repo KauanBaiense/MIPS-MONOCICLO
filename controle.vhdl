@@ -1,41 +1,90 @@
-library ieee;
-use ieee.std_logic_1164.all;
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
-entity Controle is
-	port(
-        opcode : in STD_LOGIC_VECTOR(5 downto 0);
-        reg_write : out STD_LOGIC;
-        ula_src : out STD_LOGIC;
-        mem_read : out STD_LOGIC;
-        mem_write : out STD_LOGIC;
-        mem_to_reg : out STD_LOGIC;
-        reg_dst : out STD_LOGIC;
-        DvCeq : out STD_LOGIC;
-        DvCne : out STD_LOGIC;
-        jump : out STD_LOGIC;
-        ula_op : out STD_LOGIC_VECTOR(1 downto 0)
-	);
-end entity;
+entity controle is
+    Port (
+        opcode    : in  std_logic_vector(5 downto 0);
+        RegDst    : out std_logic;
+        ALUFonte  : out std_logic;
+        MemParaReg  : out std_logic;
+        RegWrite  : out std_logic;
+        MemRead   : out std_logic;
+        MemWrite  : out std_logic;
+        DvC       : out std_logic;
+        DVI      : out std_logic;
+        ULAop     : out std_logic_vector(1 downto 0)
+    );
+end controle;
 
-architecture comportamento of Controle is
-    constant r     : std_logic_vector(5 downto 0) := "000000";
-    constant lw    : std_logic_vector(5 downto 0) := "100011";
-    constant sw    : std_logic_vector(5 downto 0) := "101011";
-    constant beq   : std_logic_vector(5 downto 0) := "000100";
-    constant bne   : std_logic_vector(5 downto 0) := "000101";
-    constant jumpc : std_logic_vector(5 downto 0) := "000010";
-    constant addi  : std_logic_vector(5 downto 0) := "001000";	
+architecture Behavior of controle is
 begin
-    reg_dst    <= '1' when Opcode = r else '0';
-    DvCeq <= '1' when Opcode = beq else '0';
-    DvCne <= '1' when Opcode = bne else '0';
-    jump       <= '1' when Opcode = jumpc else '0';
-    ula_src    <= '1' when Opcode = lw or Opcode = sw or Opcode = addi else '0';
-    mem_read   <= '1' when Opcode = lw else '0';
-    mem_to_reg <= '1' when Opcode = lw else '0';
-    mem_write  <= '1' when Opcode = sw else '0';
-    reg_write  <= '1' when Opcode = r or Opcode = lw or Opcode = addi else '0';
+    process(opcode)
+    begin
+        -- Default values
+        RegDst   <= '0';
+        ALUFonte <= '0';
+        MemParaReg <= '0';
+        RegWrite <= '0';
+        MemRead  <= '0';
+        MemWrite <= '0';
+        DvC      <= '0';
+        DVI      <= '0';
+        ULAop    <= "00";
 
-    ula_op(1) <= '1' when Opcode = r or Opcode = jump or Opcode = addi else '0';
-    ula_op(0) <= '1' when Opcode = beq or Opcode = bne else '0';
-end architecture;
+        case opcode is
+            when "000000" => -- R-type
+                RegDst   <= '1';
+                ALUFonte <= '0';
+                MemParaReg <= '-';
+                RegWrite <= '1';
+                MemRead  <= '0';
+                MemWrite <= '0';
+                DvC      <= '0';
+                DVI      <= '0';
+                ULAop    <= "10";
+            when "100011" => -- LW
+                RegDst   <= '0';
+                ALUFonte <= '1';
+                MemParaReg <= '1';
+                RegWrite <= '1';
+                MemRead  <= '1';
+                MemWrite <= '0';
+                DvC      <= '0';
+                DVI      <= '0';
+                ULAop    <= "00";
+            when "101011" => -- SW
+                RegDst   <= '0'; 
+                ALUFonte <= '1';
+                MemParaReg <= '0'; 
+                RegWrite <= '0';
+                MemRead  <= '0';
+                MemWrite <= '1';
+                DvC      <= '0';
+                DVI      <= '0';
+                ULAop    <= "00";
+            when "000100" => -- BEQ
+                RegDst   <= '0'; 
+                ALUFonte <= '0';
+                MemParaReg <= '0'; 
+                RegWrite <= '0';
+                MemRead  <= '0';
+                MemWrite <= '0';
+                DvC      <= '1';
+                DVI      <= '0';
+                ULAop    <= "01";
+            when "000010" => -- JUMP
+                RegDst   <= '0'; 
+                ALUFonte <= '0'; 
+                MemParaReg <= '0'; 
+                RegWrite <= '0';
+                MemRead  <= '0';
+                MemWrite <= '0';
+                DvC      <= '0';
+                DVI      <= '1';
+                ULAop    <= "00";
+            when others =>
+                null;
+        end case;
+    end process;
+end Behavior;

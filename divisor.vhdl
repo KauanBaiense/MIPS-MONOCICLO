@@ -10,11 +10,10 @@ entity divisor is
     );
 end entity;
 
-architecture fast_logic of divisor is
-    signal c1 : signed(N downto 0);
+architecture behavior of divisor is
+ 
 begin
-    c1 <= signed('0' & a) / signed('0' & b);
-    S  <= std_logic_vector(c1);
+    S <= std_logic_vector(resize(signed(A),33) / resize(signed(B),33));
 end architecture;
 
 

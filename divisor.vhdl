@@ -5,7 +5,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity divisor is
     generic (N: integer := 32);
     Port (
-        a, b: in  STD_LOGIC_VECTOR(N-1 downto 0);
+        A, B: in  STD_LOGIC_VECTOR(N-1 downto 0);
         S   : out STD_LOGIC_VECTOR(N downto 0)
     );
 end entity;

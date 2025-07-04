@@ -12,10 +12,10 @@ entity main is
 end main;
 
 architecture Behavior of main is
-    signal sPC,M5,S1,D2,ES,A,B,resultado : std_logic_vector(31 downto 0);
+    signal sPC,M3,M4,M5,S1,S2,D2,ES,A,B,resultado,sMem,ESv4 : std_logic_vector(31 downto 0);
     signal inst : std_logic_vector(25 downto 0);
     signal D1 : std_logic_vector(27 downto 0);
-    signal D : std_logic_vector(14 downto 0);
+    signal D : std_logic_vector(15 downto 0);
     signal regl1,regl2,C,M1 : std_logic_vector(4 downto 0);
     signal opcode,funct : std_logic_vector(5 downto 0);
     signal FontePC,zero,overflow_ULA : std_logic;
@@ -24,13 +24,13 @@ architecture Behavior of main is
     signal cULA : std_logic_vector(2 downto 0);
 begin
     -- PARTE DE BAIXO MIPS
-    PC: entity work.std_register(behavior)
+    PC: entity work.registerEnable(behavior)
         generic map(N => 32)
-        port map(clk => clk, enable => signals, d => M5, q => sPC);
+        port map(clk => clk, d => M5, q => sPC);
 
     -- sMem : entity work.memory
     -- LEITURA de SPC
-
+    sMem <= MEMORIA; 
     inst <= sMem(25 downto 0);
 
     opcode <= sMem(31 downto 26); -- BITS DO CONTROLE
@@ -47,10 +47,6 @@ begin
         RegWrite => RegWrite, MemRead => MemRead, MemWrite => MemWrite, DvC => DvC, DVI => DVI,
         ULAop => ULAop); --CONTROLE
 
-    MUX1: entity work.mux_2to1(behavior)
-        generic map(N => 5)
-        port map(sel => RegDst, in_0 => regl2, in_1 => C, y => M1);
-
     --BANCO DE REGISTRADORES
     BancoREG : entity work.banco_Reg
         generic map(n => 32)
@@ -58,42 +54,43 @@ begin
     
     ES <= std_logic_vector(resize(unsigned(D),32)); -- extensão de sinal
     
-    MUX1: entity work.mux_2to1(behavior)
+    MUX1: entity work.mux2_1(behavior)
         generic map(N => 5)
-        port map(sel => RegDst, in_0 => regl2, in_1 => C, y => M1);
-
+        port map(sel => RegDst, A => regl2, B => C, Y => M1);
+    
     ctrlULA: entity work.ctrl_ULA
         generic map(n => 32)
         port map(funct => funct, ULAop => ULAop, cULA => cULA);
     
     ULA: entity work.ULA
         generic map(N=> 32)
-        port map(a=> A, b=> B, result=> resultado, overflow_ULA=> overflow_ULA, cULA=> cULA, zero => zero);
+        port map(a=> A, b => B, result=> resultado, overflow_ULA=> overflow_ULA, cULA=> cULA, zero => zero);
     
-    MUX3: entity work.mux_2to1(behavior)
+    MUX3: entity work.mux2_1(behavior)
         generic map(N => 32)
-        port map(sel => MemParaReg,in_0 => resultado, in_1 => dado lido#memoria, y => M3);
+        port map(sel => MemParaReg, A => resultado, B => MEMORIA, Y => M3);
     
     -- PARTE DE CIMA MIPS
-    S1 <= '4' + sPC; -- somador 1
+    Somador1: entity work.somador(behavior)
+        generic map(N => 32)
+        port map(a => sPC, b => "00000000000000000000000000000100", s => S1); -- soma PC + 4
+    
+    ESv4 <= ES(29 downto 0) & "00";
+    somador2: entity work.somador(behavior)
+        generic map(N => 32)
+        port map(a => S1, b => ESv4, S => S2);
+
     D1 <= inst & "00"; -- Deslocamento de 2 bits para a esquerda *4
     D2 <= S1(31 downto 28) & D1; -- concatenação D1 E (PC + 4) 4 bits
     
-    MUX4: entity work.mux_2to1(behavior)
+    MUX4: entity work.mux2_1(behavior)
         generic map(N => 32)
-        port map(sel => FontePC, in_0 => S1, in_1 => S2, y => M4);
+        port map(sel => FontePC, A => S1, B => S2, Y => M4);
 
-    MUX5: entity work.mux_2to1(behavior)
+    MUX5: entity work.mux2_1(behavior)
         generic map(N => 32)
-        port map(sel => DVI, in_0 => M4, in_1 => D2, y => M5);
+        port map(sel => DVI, A => M4, B => D2, Y => M5);
     
     FontePC <= zero and DvC;
-
-    ESv4 <= ES(29 downto 0) & "00";
-
-    somador2: entity work.somador(behavior)
-        generic map(N => 32)
-        port map(a => S1, b => ESv4, y => S2);
-
 
 end behavior;

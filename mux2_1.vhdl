@@ -9,7 +9,7 @@ entity mux2_1 is
     );
 end entity;
 
-architecture fast_logic of mux2_1 is
+architecture behavior of mux2_1 is
 begin
     Y <= A when sel = '0' else B;
 end architecture;

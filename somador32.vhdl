@@ -11,5 +11,5 @@ entity somador32 is
 end entity;
 architecture logic of somador32 is
 begin
-    S <= std_logic_vector(unsigned('0' & A) + unsigned('0' & B));
+     S <= std_logic_vector(resize(signed(A),33) + resize(signed(B),33));
 end architecture;
